@@ -11,7 +11,7 @@ cwd = os.getcwd()
 win = pygame.display.set_mode((0,0),0,pygame.FULLSCREEN)
 assets_directory = os.path.join(cwd, 'game\\assets')
 
-def Assets():
+def Assets() -> dict[str, pygame.Surface]:
     files = os.listdir(assets_directory)
     preloadedAssets = {}
 

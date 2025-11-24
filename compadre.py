@@ -5,6 +5,7 @@
 import random
 import os
 import struct
+import game.helpers.JSONHelper as JSON
 
 # SETTINGS
 COMPADRE_FILE_NAME = ".jab"
@@ -48,12 +49,9 @@ def readCompadre():
             "nextTry": nextTry
         }
 
-
 ## @name: boot
 ## @desc: Initiates everything... please run FIRST.
 
 def boot(triesToReset):
     if not os.path.exists(compadreFile):
         writeCompadre(1, triesToReset)
-
-print(str(readCompadre()))

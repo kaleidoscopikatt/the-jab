@@ -1,6 +1,8 @@
 import os
 import random
 
+import compadre
+import uuid
 
 from game.classes import Player, screen_object, Floor, Present
 from game.globals import win, Assets
@@ -10,23 +12,39 @@ try:
 except ModuleNotFoundError as e:
     os.system("pip install pygame --user")
 
-pygame.display.set_caption("Present catcher")
+pygame.display.set_caption("Santa's Present-Catcher!")
+
 run = True
 
+compadre.boot(3) # Three tries until it retries...
 pygame.init()
 
 preloaded_images = Assets()
 
-screen_objects = [Player(500,500, preloaded_images["player"]),
-                  Floor(0,600,preloaded_images["floor"]),
-                  Floor(500,600,preloaded_images["floor"]),
-                  Present(random.randint(0,1000), 0, 5, preloaded_images["present"])
+floor_y = 900
+
+screen_objects = [Player(500,floor_y-preloaded_images["player"].get_height(), preloaded_images["player"]),
+                  Floor(0,floor_y,preloaded_images["floor"]),
+                  Floor(500,floor_y,preloaded_images["floor"]),
+                  Floor(1000,floor_y,preloaded_images["floor"]),
+                  Floor(1500,floor_y,preloaded_images["floor"]),
+                  Present(random.randint(0,2000), 0, preloaded_images["present"], uuid=uuid.uuid4())
                   ]
+
 presents = []
+presents_cache = []
 
 score = 0
-score_font = pygame.font.SysFont("comic_sans", 30)
+score_font = pygame.font.SysFont("jetbrains_mono", 30) # No, we're not using comic_sans.
 score_text = score_font.render(f"Score: {score}", True, (255,0,0))
+
+def getPresentFloorY():
+    return floor_y - 50
+
+def newPresent(x=None, y=None):
+    screen_objects.append(Present(x or random.randrange(0,2000),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
+
+print("Present Floor Y: " + str(getPresentFloorY()))
 
 while run:
     if pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -42,41 +60,34 @@ while run:
             run = False
 
     presents = [present for present in screen_objects if isinstance(present, Present)]
-    floors_that_presents_care_about = [floor for floor in screen_objects if isinstance(floor, Floor)]
 
     if pygame.mouse.get_pressed()[0]:
-        screen_objects.append(Present(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 5, preloaded_images["present"]))
+        pos = pygame.mouse.get_pos()
+        newPresent(pos[0], pos[1])
 
     for obj in screen_objects:
         if isinstance(obj, screen_object):
             obj.update()
 
             if isinstance(obj, Player):
-                obj.on_floor = False
-                obj.falling = True
-
-                #Floor collision - may need improvement later but idrc rn
-                for floor in screen_objects:
-
-                    if isinstance(floor, Floor) and obj.hitbox.colliderect(floor.hitbox):
-                            obj.falling = False
-                            obj.on_floor = True
-                            break
-
-                #present collisions
+                # Present Collisions
                 for present in presents:
-                    if present.hitbox.colliderect(obj.hitbox):
+                    if present.hitbox.colliderect(obj.hitbox) and not present.uuid in presents_cache:
+                        if len(presents_cache) == 10:
+                            presents_cache.pop(0)
+                        
+                        presents_cache.append(present.uuid)
                         screen_objects.remove(present)
-                        screen_objects.append(Present(random.randrange(0,1000),0, 5, preloaded_images["present"]))
+                        newPresent()
+
                         score += 1
 
             if isinstance(obj, Present):
-
-                for floor in floors_that_presents_care_about:
-
-                    if obj.hitbox.colliderect(floor.hitbox):
-                        obj.falling = False
-                        break
+                stopPoint = getPresentFloorY()
+                if obj.y >= stopPoint:
+                    newPresent()
+                    screen_objects.remove(obj)
+                    break
 
     pygame.display.update()
 pygame.quit()
