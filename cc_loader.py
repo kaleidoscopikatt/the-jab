@@ -2,7 +2,7 @@
 # @desc: compadre-cache loader... loads the cache accessible by Compadre.
 
 import os
-import game.helpers.JSONHelper as JSON
+import struct
 
 player_speed = 1 # pixels/frame
 present_fall_speed = 1 # pixels/frame
@@ -17,13 +17,17 @@ positions = []
 
 player_reach = (present_y_dist / present_fall_speed) * player_speed
 
+_bytes = []
 for x in range(floor_width+1):
-    xRow = []
-    for present_x in range(floor_width+1):
-        diff = abs(present_x-x)
-        presentWillFall = diff > player_reach
-        if presentWillFall:
-            xRow.append(present_x)
-    positions.append(xRow)
+    left_max = max(0, int(x - player_reach))
+    right_min = min(floor_width, int(x + player_reach))
+    
+    row = struct.pack('hh', left_max, right_min)
+    _bytes.append(row)
 
-JSON.write("positions.json", positions)
+out = [struct.pack('h', len(_bytes))]
+out.extend(_bytes)
+
+with open('👁.👁', 'wb') as eye:
+    eye.write(b''.join(out))
+    eye.close()

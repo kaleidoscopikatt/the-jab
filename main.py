@@ -12,11 +12,13 @@ try:
 except ModuleNotFoundError as e:
     os.system("pip install pygame --user")
 
+TRIES_TO_RESET = 3
+
 pygame.display.set_caption("Santa's Present-Catcher!")
 
 run = True
 
-compadre.boot(3) # Three tries until it retries...
+compadre.boot(TRIES_TO_RESET) # Three tries until it retries...
 pygame.init()
 
 preloaded_images = Assets()
@@ -42,7 +44,7 @@ def getPresentFloorY():
     return floor_y - 50
 
 def newPresent(x=None, y=None):
-    screen_objects.append(Present(x or random.randrange(0,2000),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
+    screen_objects.append(Present(x or compadre.getCompadre(screen_objects[0].x, floorWidth=500*4),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
 
 print("Present Floor Y: " + str(getPresentFloorY()))
 
