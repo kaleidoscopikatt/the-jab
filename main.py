@@ -23,7 +23,14 @@ pygame.init()
 
 preloaded_images = Assets()
 
-floor_y = 900
+display_info = pygame.display.Info()
+screen_width = display_info.current_w
+screen_height = display_info.current_h
+
+floor_y = screen_height/1.05 # Don't ask (or fix it's funny)
+
+difficulties = [i * round(1.5 ** i + i/i) for i in range(100) if i != 0] #beautiful
+wins = 0
 
 screen_objects = [Player(500,floor_y-preloaded_images["player"].get_height(), preloaded_images["player"]),
                   Floor(0,floor_y,preloaded_images["floor"]),
@@ -37,14 +44,14 @@ presents = []
 presents_cache = []
 
 score = 0
-score_font = pygame.font.SysFont("jetbrains_mono", 30) # No, we're not using comic_sans.
+score_font = pygame.font.SysFont("jetbrains_mono", 30) # Awwwww...
 score_text = score_font.render(f"Score: {score}", True, (255,0,0))
 
 def getPresentFloorY():
     return floor_y - 50
 
 def newPresent(x=None, y=None):
-    screen_objects.append(Present(x or compadre.getCompadre(screen_objects[0].x, floorWidth=500*4),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
+    screen_objects.append(Present(x or compadre.getCompadre(screen_objects[0].x, floorWidth=screen_width),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
 
 print("Present Floor Y: " + str(getPresentFloorY()))
 
@@ -54,7 +61,7 @@ while run:
 
     win.fill((0,0,0))
 
-    score_text = score_font.render(f"Score: {score}", True, (255, 0, 0))
+    score_text = score_font.render(f"Score: {score}/{difficulties[0]}", True, (255, 0, 0))
     win.blit(score_text, (80,50))
 
     for event in pygame.event.get():
@@ -69,7 +76,6 @@ while run:
 
     for obj in screen_objects:
         if isinstance(obj, screen_object):
-            obj.update()
 
             if isinstance(obj, Player):
                 # Present Collisions
@@ -82,6 +88,9 @@ while run:
                         screen_objects.remove(present)
                         newPresent()
 
+                        if random.randrange(1,10) == 4:
+                            newPresent()
+
                         score += 1
 
             if isinstance(obj, Present):
@@ -90,6 +99,20 @@ while run:
                     newPresent()
                     screen_objects.remove(obj)
                     break
+
+            obj.update()
+
+    if len(difficulties) == 0:
+        wins += 1
+        difficulties = [i * (round(1.5 ** i + i / i) * (wins + 1)) for i in range(100)]  # beautifuler
+        print("Win achieved; reset the difficulties")
+
+    if score >= difficulties[0]:
+        score = 0
+        difficulties.pop(0)
+
+
+
 
     pygame.display.update()
 pygame.quit()

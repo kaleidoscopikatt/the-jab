@@ -104,7 +104,7 @@ def getCompadre(playerX, floorWidth):
             unreachablePosition = specificData[1] + randomOffset
         elif specificData[1] == floorWidth:
             unreachablePosition = specificData[0] - randomOffset
-    return unreachablePosition if shouldUnreach else randomVal
+    return unreachablePosition if shouldUnreach else  randomVal
 
 
 ## @name: boot
