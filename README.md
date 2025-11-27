@@ -42,4 +42,5 @@ print(str(compadre.readCompadre()))
 ```
 
 **Known Issues**
-* ?
+* Compadre always Spawns presents in basically the same spot
+* Don't think that this is an error but the result is ALWAYS rigged
