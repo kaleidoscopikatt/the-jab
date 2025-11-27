@@ -44,7 +44,7 @@ presents = []
 presents_cache = []
 
 score = 0
-score_font = pygame.font.SysFont("jetbrains_mono", 30) # Awwwww...
+score_font = pygame.font.SysFont("jetbrains_mono", 50) # Awwwww...
 score_text = score_font.render(f"Score: {score}", True, (255,0,0))
 
 def getPresentFloorY():
@@ -98,7 +98,7 @@ while run:
                 if obj.y >= stopPoint:
                     newPresent()
                     screen_objects.remove(obj)
-                    break
+                    continue
 
             obj.update()
 
