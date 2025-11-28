@@ -5,7 +5,9 @@ import compadre
 import uuid
 
 from game.classes import Player, screen_object, Floor, Present
-from game.globals import win, Assets
+from game.globals import win, Assets, particles
+from game.particles import particle
+from game.particles.present import present as present_particle
 
 try:
     import pygame
@@ -74,6 +76,11 @@ while run:
         pos = pygame.mouse.get_pos()
         newPresent(pos[0], pos[1])
 
+    for particle in particles: #Don't ask why I'm trying to add particles I'm bored
+        if isinstance(particle, present_particle):
+            particle.update()
+            particle.draw()
+
     for obj in screen_objects:
         if isinstance(obj, screen_object):
 
@@ -81,6 +88,8 @@ while run:
                 # Present Collisions
                 for present in presents:
                     if present.hitbox.colliderect(obj.hitbox) and not present.uuid in presents_cache:
+                        particles.extend([present_particle(obj.x + (obj.sprite.get_width()/2), obj.y + (obj.sprite.get_height()/2), [5, 5], ((200, 150, 50), (255, 200, 100)), 60) for _ in range(10)])
+
                         if len(presents_cache) == 10:
                             presents_cache.pop(0)
                         
@@ -90,6 +99,7 @@ while run:
 
                         if random.randrange(1,10) == 4:
                             newPresent()
+
 
                         score += 1
 
@@ -110,6 +120,8 @@ while run:
     if score >= difficulties[0]:
         score = 0
         difficulties.pop(0)
+
+
 
 
 

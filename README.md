@@ -44,3 +44,6 @@ print(str(compadre.readCompadre()))
 **Known Issues**
 * Compadre always Spawns presents in basically the same spot
 * Don't think that this is an error but the result is ALWAYS rigged
+
+## Ben's public apology (apologies):
+**I somehow put the entire project inside itself idk how but the link on github gives an error 404 so have absolutely no clue there and the folder doesn't seem to exist if I try to git pull**

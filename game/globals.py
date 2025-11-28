@@ -10,6 +10,7 @@ image_types = ['png']
 cwd = os.getcwd()
 win = pygame.display.set_mode((0,0),0,pygame.FULLSCREEN)
 assets_directory = os.path.join(cwd, 'game\\assets')
+particles: list = []
 
 def Assets() -> dict[str, pygame.Surface]:
     files = os.listdir(assets_directory)
