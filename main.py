@@ -45,9 +45,11 @@ screen_objects = [Player(500,floor_y-preloaded_images["player"].get_height(), pr
 presents = []
 presents_cache = []
 
+time_remaining = 100
+
 score = 0
 score_font = pygame.font.SysFont("jetbrains_mono", 50) # Awwwww...
-score_text = score_font.render(f"Score: {score}", True, (255,0,0))
+score_text = score_font.render(f"Score: {score} | Level: {wins} | Time left: ", True, (255,0,0))
 
 def getPresentFloorY():
     return floor_y - 50
@@ -63,7 +65,7 @@ while run:
 
     win.fill((0,0,0))
 
-    score_text = score_font.render(f"Score: {score}/{difficulties[0]}", True, (255, 0, 0))
+    score_text = score_font.render(f"Score: {score}/{difficulties[0]} | Level: {wins} | Time left: ", True, (255, 0, 0))
     win.blit(score_text, (80,50))
 
     for event in pygame.event.get():

@@ -90,7 +90,7 @@ def getCompadre(playerX, floorWidth):
         data = __parseDataFile(f.read())
         f.close()
     randomVal = __getRandomPosition(playerX, floorWidth, data)
-    shouldUnreach = readCompadre()["flag"] == True
+    shouldUnreach = readCompadre()["flag"] == (False if random.randrange(1,3) == 1 else True)
 
     specificData = data[playerX]
     if specificData[0] != 0 and specificData[1] != floorWidth:
@@ -104,7 +104,7 @@ def getCompadre(playerX, floorWidth):
             unreachablePosition = specificData[1] + randomOffset
         elif specificData[1] == floorWidth:
             unreachablePosition = specificData[0] - randomOffset
-    return unreachablePosition if shouldUnreach else  randomVal
+    return unreachablePosition if shouldUnreach else randomVal
 
 
 ## @name: boot
