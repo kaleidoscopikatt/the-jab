@@ -59,9 +59,11 @@ compadre.boot(3)
 presents = []
 presents_cache = []
 
+time_remaining = 100
+
 score = 0
 score_font = pygame.font.SysFont("jetbrains_mono", 50) # Awwwww...
-score_text = score_font.render(f"Score: {score}", True, (255,0,0))
+score_text = score_font.render(f"Score: {score} | Level: {wins} | Time left: ", True, (255,0,0))
 
 def __randomPosition():
     currX = current_player.x

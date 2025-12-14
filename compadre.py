@@ -78,7 +78,7 @@ def __getRandomPosition(playerX):
 
 def getCompadre(playerX, floorWidth, data):
     randomVal = __getRandomPosition(playerX, floorWidth, data)
-    shouldUnreach = readCompadre()["flag"] == True
+    shouldUnreach = readCompadre()["flag"] == (False if random.randrange(1,3) == 1 else True)
 
     specificData = data[playerX]
     if specificData[0] != 0 and specificData[1] != floorWidth:
