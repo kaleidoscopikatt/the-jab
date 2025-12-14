@@ -15,6 +15,7 @@ COMPADRE_FILE_NAME = ".jab"
 cwd = os.getcwd()
 compadreFile = os.path.join(cwd, COMPADRE_FILE_NAME)
 
+screenWidth = 600
 
 ## @name: writeCompadre
 ## @desc: Writes the current information to Compadre. Use this for rigging.
@@ -60,35 +61,22 @@ def readCompadre():
 ## @desc: Private function for parsing 👁.👁 into an array of rows.
 
 def __parseDataFile(data):
-    (count,) = struct.unpack_from("H", data, 0)
-    cursor = 2
-
-    rows = []
-    for _ in range(count):
-        left_max, right_min = struct.unpack_from("HH", data, cursor)
-        cursor += 4
-        rows.append((left_max, right_min))
-    return rows
+    left_max, right_min = struct.unpack_from("hh", data)
+    return [left_max, right_min]
 
 
 ## @name: __getRandomPosition
 ## @desc: Private function for getting a random, reachable position
 
-def __getRandomPosition(playerX, floorWidth, data):
-    randomVal = random.randint(1, floorWidth)
-    range = data[randomVal]
-    if range[0] <= randomVal <= range[1]:
-        return randomVal
-    return __getRandomPosition(playerX, floorWidth, data)
+def __getRandomPosition(playerX):
+    randomVal = random.randint(1, screenWidth)
+    return __getRandomPosition(playerX)
 
 
 ## @name: getCompadre
 ## @desc: Gets either a random or an unreachable position from 👁.👁
 
-def getCompadre(playerX, floorWidth):
-    with open('👁.👁', 'rb') as f:
-        data = __parseDataFile(f.read())
-        f.close()
+def getCompadre(playerX, floorWidth, data):
     randomVal = __getRandomPosition(playerX, floorWidth, data)
     shouldUnreach = readCompadre()["flag"] == True
 
@@ -104,7 +92,7 @@ def getCompadre(playerX, floorWidth):
             unreachablePosition = specificData[1] + randomOffset
         elif specificData[1] == floorWidth:
             unreachablePosition = specificData[0] - randomOffset
-    return unreachablePosition if shouldUnreach else  randomVal
+    return unreachablePosition if shouldUnreach else randomVal
 
 
 ## @name: boot
@@ -113,3 +101,9 @@ def getCompadre(playerX, floorWidth):
 def boot(triesToReset):
     if not os.path.exists(compadreFile):
         writeCompadre(1, triesToReset, updateNextTry=True)
+    ##data = None
+    ##with open('👁.👁', 'rb') as f:
+    ##    data = __parseDataFile(f.read())
+    ##    f.close()
+    
+    ##return data

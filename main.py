@@ -9,18 +9,16 @@ from game.globals import win, Assets, particles
 from game.particles import particle
 from game.particles.present import present as present_particle
 
+import sys
+
 try:
     import pygame
 except ModuleNotFoundError as e:
     os.system("pip install pygame --user")
 
-TRIES_TO_RESET = 3
-
 pygame.display.set_caption("Santa's Present-Catcher!")
 
 run = True
-
-compadre.boot(TRIES_TO_RESET) # Three tries until it retries...
 pygame.init()
 
 preloaded_images = Assets()
@@ -29,18 +27,34 @@ display_info = pygame.display.Info()
 screen_width = display_info.current_w
 screen_height = display_info.current_h
 
-floor_y = screen_height/1.05 # Don't ask (or fix it's funny)
+floor_y = screen_height / 1.05 # Don't ask (or fix it's funny)
+floor_n = (screen_width // 600) + 1
 
-difficulties = [i * round(1.5 ** i + i/i) for i in range(100) if i != 0] #beautiful
-wins = 0
+curr_round = 0
+round_boundaries = [ # No. of Presents Dropped = n + 5
+    10,
+    15,
+    25,
+]
 
-screen_objects = [Player(500,floor_y-preloaded_images["player"].get_height(), preloaded_images["player"]),
-                  Floor(0,floor_y,preloaded_images["floor"]),
-                  Floor(500,floor_y,preloaded_images["floor"]),
-                  Floor(1000,floor_y,preloaded_images["floor"]),
-                  Floor(1500,floor_y,preloaded_images["floor"]),
-                  Present(random.randint(0,2000), 0, preloaded_images["present"], uuid=uuid.uuid4())
-                  ]
+dropped_prezzies = 0
+
+current_player = Player(500,floor_y-preloaded_images["player"].get_height(), preloaded_images["player"])
+playerReach = floor_y * current_player.speed
+
+screen_objects = [
+    current_player,
+    Present(random.randint(0,2000), 0, preloaded_images["present"], uuid=uuid.uuid4())
+]
+
+## Variable Floor Width
+for floor_number in range(floor_n):
+    xPos = 600 * floor_number
+    screen_objects.append(Floor(xPos, floor_y, preloaded_images["floor"]))
+
+## Compadre Setup
+compadre.screenWidth = screen_width
+compadre.boot(3)
 
 presents = []
 presents_cache = []
@@ -49,11 +63,42 @@ score = 0
 score_font = pygame.font.SysFont("jetbrains_mono", 50) # Awwwww...
 score_text = score_font.render(f"Score: {score}", True, (255,0,0))
 
+def __randomPosition():
+    currX = current_player.x
+    maxX = min(int(currX + playerReach), screen_width)
+    minX = max(0, int(currX - playerReach))
+
+    randomValue = random.randrange(minX, maxX)
+    return randomValue
+
+def getPosition():
+    randomValue = __randomPosition()
+    shouldUnreach = compadre.readCompadre()["flag"]
+
+    currX = current_player.x
+    if shouldUnreach:
+        print("SHOULD UNREACH!!!")
+        if random.randrange(1, 4) == 1 or score == round_boundaries[curr_round] - 1:
+            if randomValue >= currX:
+                randomValue = min(currX + playerReach + random.randrange(0, 25), screen_width)
+            else:
+                randomValue = max(0, currX - playerReach - random.randrange(0, 25))
+
+    return randomValue
+
 def getPresentFloorY():
     return floor_y - 50
 
 def newPresent(x=None, y=None):
-    screen_objects.append(Present(x or compadre.getCompadre(screen_objects[0].x, floorWidth=screen_width),y or 0, preloaded_images["present"], uuid=uuid.uuid4()))
+    r = True
+    global dropped_prezzies
+    if (dropped_prezzies + 1) >= round_boundaries[curr_round] + 5:
+        r = False
+    else:
+        print(f"{(dropped_prezzies + 1)} / {round_boundaries[curr_round] + 5}")
+    dropped_prezzies += 1
+    screen_objects.append(Present(x or getPosition(), y or 0 , preloaded_images["present"], uuid=uuid.uuid4()))
+    return r
 
 print("Present Floor Y: " + str(getPresentFloorY()))
 
@@ -63,7 +108,7 @@ while run:
 
     win.fill((0,0,0))
 
-    score_text = score_font.render(f"Score: {score}/{difficulties[0]}", True, (255, 0, 0))
+    score_text = score_font.render(f"Score: {score}/{round_boundaries[curr_round]}", True, (255, 0, 0) if score < round_boundaries[curr_round] else (0, 255, 0))
     win.blit(score_text, (80,50))
 
     for event in pygame.event.get():
@@ -89,19 +134,22 @@ while run:
                 for present in presents:
                     if present.hitbox.colliderect(obj.hitbox) and not present.uuid in presents_cache:
                         particles.extend([present_particle(obj.x + (obj.sprite.get_width()/2), obj.y + (obj.sprite.get_height()/2), [5, 5], ((200, 150, 50), (255, 200, 100)), 60) for _ in range(10)])
+                        score += 1
 
                         if len(presents_cache) == 10:
                             presents_cache.pop(0)
                         
                         presents_cache.append(present.uuid)
                         screen_objects.remove(present)
-                        newPresent()
-
-                        if random.randrange(1,10) == 4:
-                            newPresent()
-
-
-                        score += 1
+                        res = newPresent()
+                        if not res:
+                            if (curr_round + 2 > len(round_boundaries)) or (score < round_boundaries[curr_round]):
+                                sys.exit()
+                                run = False
+                            curr_round += 1
+                            dropped_prezzies = 0
+                            score = 0
+                            compadre.writeCompadre(curr_round, 3)
 
             if isinstance(obj, Present):
                 stopPoint = getPresentFloorY()
@@ -111,20 +159,6 @@ while run:
                     continue
 
             obj.update()
-
-    if len(difficulties) == 0:
-        wins += 1
-        difficulties = [i * (round(1.5 ** i + i / i) * (wins + 1)) for i in range(100)]  # beautifuler
-        print("Win achieved; reset the difficulties")
-
-    if score >= difficulties[0]:
-        score = 0
-        difficulties.pop(0)
-
-
-
-
-
-
+    
     pygame.display.update()
 pygame.quit()
