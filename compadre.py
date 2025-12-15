@@ -99,8 +99,7 @@ def getCompadre(playerX, floorWidth, data):
 ## @desc: Initiates everything... please run FIRST.
 
 def boot(triesToReset):
-    if not os.path.exists(compadreFile):
-        writeCompadre(1, triesToReset, updateNextTry=True)
+    writeCompadre(1, triesToReset, updateNextTry=True)
     ##data = None
     ##with open('👁.👁', 'rb') as f:
     ##    data = __parseDataFile(f.read())

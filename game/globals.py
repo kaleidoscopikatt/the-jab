@@ -20,5 +20,6 @@ def Assets() -> dict[str, pygame.Surface]:
         path, ext = os.path.basename(file).split(os.path.extsep)
 
         if ext in image_types:
-            preloadedAssets[path] = pygame.image.load(os.path.join(assets_directory, file))
+            temp = pygame.image.load(os.path.join(assets_directory, file))
+            preloadedAssets[path] = pygame.transform.scale_by(temp, 4)
     return preloadedAssets

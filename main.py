@@ -27,6 +27,8 @@ display_info = pygame.display.Info()
 screen_width = display_info.current_w
 screen_height = display_info.current_h
 
+preloaded_images["background"] = pygame.transform.scale(preloaded_images["background"], (screen_width, screen_height))
+
 floor_y = screen_height / 1.05 # Don't ask (or fix it's funny)
 floor_n = (screen_width // 600) + 1
 
@@ -39,8 +41,8 @@ round_boundaries = [ # No. of Presents Dropped = n + 5
 
 dropped_prezzies = 0
 
-current_player = Player(500,floor_y-preloaded_images["player"].get_height(), preloaded_images["player"])
-playerReach = floor_y * current_player.speed
+current_player = Player(500,screen_height-preloaded_images["player"].get_height(), preloaded_images["player"])
+playerReach = screen_height * current_player.speed + (preloaded_images["player"].get_width() / 2)
 
 screen_objects = [
     current_player,
@@ -48,9 +50,9 @@ screen_objects = [
 ]
 
 ## Variable Floor Width
-for floor_number in range(floor_n):
-    xPos = 600 * floor_number
-    screen_objects.append(Floor(xPos, floor_y, preloaded_images["floor"]))
+# for floor_number in range(floor_n):
+#     xPos = 600 * floor_number
+#     screen_objects.append(Floor(xPos, floor_y, preloaded_images["floor"]))
 
 ## Compadre Setup
 compadre.screenWidth = screen_width
@@ -63,7 +65,7 @@ time_remaining = 100
 
 score = 0
 score_font = pygame.font.SysFont("jetbrains_mono", 50) # Awwwww...
-score_text = score_font.render(f"Score: {score} | Level: {wins} | Time left: ", True, (255,0,0))
+score_text = score_font.render(f"Score: {score} | Level: {curr_round} | Time left: ", True, (255,0,0))
 
 def __randomPosition():
     currX = current_player.x
@@ -75,21 +77,30 @@ def __randomPosition():
 
 def getPosition():
     randomValue = __randomPosition()
+    currX = current_player.x
+
+    if ((randomValue - currX) ** 2 ** 1/2) <= 25:
+        return getPosition()
+
     shouldUnreach = compadre.readCompadre()["flag"]
 
-    currX = current_player.x
-    if shouldUnreach:
-        print("SHOULD UNREACH!!!")
-        if random.randrange(1, 4) == 1 or score == round_boundaries[curr_round] - 1:
+    print("Confirming is reachable: True") #haha... ahahaha.. ha-ha...
+    if shouldUnreach or random.randrange(1, 4) == 1:
+        print("Luck ran out")
+        if random.randrange(1, 2) == 1 or score == round_boundaries[curr_round] - 1:
             if randomValue >= currX:
                 randomValue = min(currX + playerReach + random.randrange(0, 25), screen_width)
             else:
                 randomValue = max(0, currX - playerReach - random.randrange(0, 25))
+            if (randomValue == screen_width):
+                randomValue = currX - playerReach - random.randrange(0, 25)
+            elif (randomValue == 0):
+                currX - playerReach - random.randrange(0, 25)
 
     return randomValue
 
 def getPresentFloorY():
-    return floor_y - 50
+    return screen_height - 50
 
 def newPresent(x=None, y=None):
     r = True
@@ -99,7 +110,7 @@ def newPresent(x=None, y=None):
     else:
         print(f"{(dropped_prezzies + 1)} / {round_boundaries[curr_round] + 5}")
     dropped_prezzies += 1
-    screen_objects.append(Present(x or getPosition(), y or 0 , preloaded_images["present"], uuid=uuid.uuid4()))
+    screen_objects.append(Present(x or getPosition(), y or 0 , (preloaded_images["present"]), uuid=uuid.uuid4()))
     return r
 
 print("Present Floor Y: " + str(getPresentFloorY()))
@@ -109,8 +120,9 @@ while run:
         run = False
 
     win.fill((0,0,0))
+    win.blit(preloaded_images["background"], (0, 0))
 
-    score_text = score_font.render(f"Score: {score}/{round_boundaries[curr_round]}", True, (255, 0, 0) if score < round_boundaries[curr_round] else (0, 255, 0))
+    score_text = score_font.render(f"Score: {score}/{round_boundaries[curr_round]}", True, (255, 255, 255) if score < round_boundaries[curr_round] else (0, 255, 0))
     win.blit(score_text, (80,50))
 
     for event in pygame.event.get():

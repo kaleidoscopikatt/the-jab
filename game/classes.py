@@ -68,7 +68,7 @@ class Present(screen_object):
         super().__init__(x, y, sprite) # Why were you parsing vel into this...?
         self.x = x
         self.y = y
-        self.sprite = pygame.transform.scale(sprite,(50,50))
+        self.sprite = pygame.transform.scale(sprite,(50*2,50*2))
         self.falling: bool = True
         self.hitbox = generate_hitbox(self.sprite, self.x, self.y)
         self.uuid=uuid
